@@ -1,0 +1,8 @@
+Agent,Accuracy,Avg. Iterations,Avg. runtime,Avg. solution length
+,,,,
+BABA_GO,68.87,652.64,3.83,91.88
+DefaultAgent,60.9,1501,4.437,13.9
+FirstApproach,22,289,7.804,100243.8
+Weird,71.2,1044,3.316,17.3
+DefaultFix1,46.2,1976,5.598,31.9
+DefaultFix2,56.5,1622,4.509,31.2
