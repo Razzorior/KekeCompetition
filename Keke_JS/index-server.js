@@ -83,6 +83,12 @@ function solveLevel(ls,id,agent){
 	console.log(`* FINISHED LEVEL [ ${id} ] *`)
 }
 
+// SOLVE A LEVELSET
+function solveLevelSet(ls,agent, params=null){
+	let res = execjs.solveLevelSet(ls, agent, params);
+	io.emit('finish-level-set', res);
+	console.log(`* FINISHED LEVELSET [ ${ls} ] *`)
+}
 
 ////     SERVER INTERACTIONS     ////
 
@@ -118,6 +124,11 @@ io.on('connection', (socket) => {
 		solveLevel(dat['levelSet'],dat['levelID'],dat['agent']);
 	});
 
+	//start training an agent on specific level set
+	socket.on('solve-level-set', (dat) => {
+		console.log(`-- SOLVING LEVEL SET [ ${dat['levelSet']} ] WITH AGENT [ ${dat['agent']} ] --`);
+		solveLevelSet(dat['levelSet'],dat['agent'], dat['params']);
+	});
 
 	//delete a json report for a specific agent and level set
 	socket.on('delete-json-set', (dat) =>{

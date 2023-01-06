@@ -4,8 +4,8 @@ var kekeAgent = (args.length > 0 ? args[0] : 'default');
 var levelSetName = (args.length > 1 ? args[1] : 'demo_levels');
 var levelNum = (args.length > 2 ? args[2] : 1);
 
-var TIMEOUT = 10.0;			//10s
-var MAX_ITER = 10000;	
+var TIMEOUT = 1.0;			//10s
+var MAX_ITER = 1000;
 
 //get node.js imports
 var kekejs = require('../agents/' + kekeAgent + '_AGENT')
@@ -17,15 +17,15 @@ var simjs = require('./simulation')
 
 
 // RUN THE KEKE SOLVER ON A LEVEL
-function run_keke(ascii_level, iterations){
+function run_keke(ascii_level, iterations, params=null){
 	//setup state
 	simjs.setupLevel(simjs.parseMap(ascii_level));
 	let gp = simjs.getGamestate();
 
 	//setup solver
-	kekejs.init(gp);
+	kekejs.init(gp, params);
 
-	console.log("Solving...");
+	//console.log("Solving...");
 
 	const start = Date.now();		//start timer
 
@@ -135,7 +135,7 @@ function executeLevel(ls,ln,iter,agent='default'){
 }
 
 // SOLVE ALL LEVELS IN A LEVEL SET FOR A SET NUMBER OF ITERATIONS
-function executeLevelSet(ls,iter,agent='default'){
+function executeLevelSet(ls,iter,agent='default', params=null){
 	//reimport keke based on agent
 	kekejs = require('../agents/' + agent + '_AGENT')
 
@@ -143,14 +143,13 @@ function executeLevelSet(ls,iter,agent='default'){
 
 	console.log(`-- SOLVING [ ${lvlSet.length} ] LEVELS FROM LEVEL SET [ ${ls} ] FOR [ ${iter} ] ITERATIONS --`);
 
-
 	let report = [];
 	for(let l=0;l<lvlSet.length;l++){
 		let lvl = lvlSet[l];
-		console.log(` LEVEL [ ${lvl.id} ] `)
+		//console.log(` LEVEL [ ${lvl.id} ] `)
 
 		//solve level
-		let r = run_keke(lvl.ascii,iter);
+		let r = run_keke(lvl.ascii, iter, params);
 		let solution = r.s;
 		let iterCt = r.i;
 		let timeExec = r.t;
@@ -161,7 +160,7 @@ function executeLevelSet(ls,iter,agent='default'){
 		jsonjs.exportReport(agent + "_REPORT.json", ls, lvl.id, iterCt, timeExec,solution,win);
 		report.push({"id":lvl.id, "iterations":iterCt, "time":timeExec, "solution":solution, "won_level":win});
 
-		console.log("");
+		//console.log("");
 	}
 	return report;
 }
@@ -181,5 +180,5 @@ function test(){
 
 module.exports = {
 	solveLevel: function(levelSet,id,agent){return executeLevel(levelSet,id,MAX_ITER,agent);},
-	solveLevelSet: function(levelSet,agent){return executeLevelSet(levelSet,MAX_ITER,agent);}
+	solveLevelSet: function(levelSet,agent, params=null){return executeLevelSet(levelSet, MAX_ITER, agent, params);}
 }
