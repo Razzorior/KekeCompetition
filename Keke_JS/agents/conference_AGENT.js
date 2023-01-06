@@ -25,6 +25,14 @@ let queue = [];
 let allrules = [];
 let unstuckWords = [];
 
+let weights = [];
+
+function initAgent(init_weights){
+	//console.log("Initialize Agent: " +  init_weights)
+	weights = init_weights;
+}
+
+
 // Heuristics for FS 
 
 /**
@@ -35,7 +43,7 @@ let unstuckWords = [];
  * @return {number} The weight multiplied with the negative number of goals.
  */
 function nbrOfGoals(state, weight=3) {
-	if(weight <= doNothingThreshold && weight >= -doNothingThreshold) 
+	if (weight <= doNothingThreshold && weight >= -doNothingThreshold)
 	{
 		return 0;
 	} 
@@ -173,45 +181,39 @@ function outOfPlan(state, weight=0.25) {
  */
 function isIsStuck(state, x, y)
 {
-	if(weight <= doNothingThreshold && weight >= -doNothingThreshold) 
-	{
-		return 0;
-	} 
-	else 
-	{ 
-		let map = state.orig_map;
-		let obj_map = state.obj_map;
 
-		// Catches whether the IS is already next too a suitable word
-		for(const word of state.words)
+	let map = state.orig_map;
+	let obj_map = state.obj_map;
+
+	// Catches whether the IS is already next too a suitable word
+	for(const word of state.words)
+	{
+		if(!(allPrefixes.indexOf(word.name)==-1))
 		{
-			if(!(allPrefixes.indexOf(word.name)==-1))
+			if((word.x == x-1 && word.y == y) || (word.x == x && word.y == y-1))
 			{
-				if((word.x == x-1 && word.y == y) || (word.x == x && word.y == y-1))
-				{
-					return false;
-				}
-			}
-			if(!(allSuffixes.indexOf(word.name)==-1))
-			{
-				if((word.x == x+1 && word.y == y) || (word.x == x && word.y == y+1))
-				{
-					return false;
-				}
+				return false;
 			}
 		}
-		let blockedDirs;
-		
-		blockedDirs = getBlockedDirs(state, map, obj_map, x, y);
-		
-		// If IS is in a corner its stuck and useless
-		if((blockedDirs[0] && blockedDirs[1]) || (blockedDirs[0] && blockedDirs[3]) || (blockedDirs[2] && blockedDirs[1]) || (blockedDirs[2] && blockedDirs[3]) )
+		if(!(allSuffixes.indexOf(word.name)==-1))
 		{
-			return true;
+			if((word.x == x+1 && word.y == y) || (word.x == x && word.y == y+1))
+			{
+				return false;
+			}
 		}
-		
-		return false;
 	}
+	let blockedDirs;
+
+	blockedDirs = getBlockedDirs(state, map, obj_map, x, y);
+
+	// If IS is in a corner its stuck and useless
+	if((blockedDirs[0] && blockedDirs[1]) || (blockedDirs[0] && blockedDirs[3]) || (blockedDirs[2] && blockedDirs[1]) || (blockedDirs[2] && blockedDirs[3]) )
+	{
+		return true;
+	}
+
+	return false;
 }
 
 /**
@@ -225,40 +227,33 @@ function isIsStuck(state, x, y)
  */
 function suffixIsStuck(state, x, y)
 {
-	if(weight <= doNothingThreshold && weight >= -doNothingThreshold) 
-	{
-		return 0;
-	} 
-	else 
-	{ 
-		let map = state.orig_map;
-		let obj_map = state.obj_map;
+	let map = state.orig_map;
+	let obj_map = state.obj_map;
 
-		// Catches whether the Suffix is next to a suitable IS
-		for(const word of state.is_connectors)
+	// Catches whether the Suffix is next to a suitable IS
+	for(const word of state.is_connectors)
+	{
+		if(!(allPrefixes.indexOf(word.name)==-1))
 		{
-			if(!(allPrefixes.indexOf(word.name)==-1))
+			if((word.x == x-1 && word.y == y) || (word.x == x && word.y == y-1))
 			{
-				if((word.x == x-1 && word.y == y) || (word.x == x && word.y == y-1))
-				{
-					return false;
-				}
+				return false;
 			}
 		}
-		
-		let blockedDirs;
-		
-		// Could save iterations building a new function, because right and below blocked are not needed
-		blockedDirs = getBlockedDirs(state, map, obj_map, x, y);
-		
-		// If IS is in a corner its stuck and useless
-		if(blockedDirs[0] && blockedDirs[1])
-		{
-			return true;
-		}
-		
-		return false;
 	}
+
+	let blockedDirs;
+
+	// Could save iterations building a new function, because right and below blocked are not needed
+	blockedDirs = getBlockedDirs(state, map, obj_map, x, y);
+
+	// If IS is in a corner its stuck and useless
+	if(blockedDirs[0] && blockedDirs[1])
+	{
+		return true;
+	}
+
+	return false;
 }
 
 /**
@@ -509,28 +504,21 @@ function minimizeStopables(state, weight=0.25)
  */
 function distanceHeuristic(state, weightWIN_D=1.25, weightWORD_D=0.25, weightPUSH_D=0.2, weight_PUNISH=5000)
 {
-	if(weight <= doNothingThreshold && weight >= -doNothingThreshold) 
+	if(state['players'].length == 0)
 	{
-		return 0;
-	} 
-	else 
-	{ 
-		if(state['players'].length == 0)
-		{
-			return weight_PUNISH; 
-		}
-		else 
-		{
-			let win_d = heuristic2(state['players'], state['winnables']);
-			let word_d = heuristic2(state['players'], state['words']);
-			let push_d = heuristic2(state['players'], state['pushables']);
-			
-			let div = 0.000001;
-			if(win_d > 0) {div++;}
-			if(word_d > 0) {div++;}
-			if(push_d > 0) {div++;}
-			return ((win_d*weightWIN_D+word_d*weightWORD_D+push_d*weightPUSH_D)/div);
-		}
+		return weight_PUNISH;
+	}
+	else
+	{
+		let win_d = heuristic2(state['players'], state['winnables']);
+		let word_d = heuristic2(state['players'], state['words']);
+		let push_d = heuristic2(state['players'], state['pushables']);
+
+		let div = 0.000001;
+		if(win_d > 0) {div++;}
+		if(word_d > 0) {div++;}
+		if(push_d > 0) {div++;}
+		return ((win_d*weightWIN_D+word_d*weightWORD_D+push_d*weightPUSH_D)/div);
 	}
 }
 
@@ -898,20 +886,23 @@ function findHotMelt(state)
 function callAllFeaturesAndSum(state)
 {
 	let score = 0;
-	score += nbrOfGoals(state);
-	score += nbrOfPlayers(state);
-	score += connectivity(state);
-	score += outOfPlan(state);
-	score += elimOfAutomovers(state);
-	score += elimOfThreats(state);
-	score += maximizePushables(state);
-	score += minimizeSinkables(state);
-	score += minimizeStopables(state);
-	score += distanceHeuristic(state); // 4 weights here
-	score += distanceToKillables(state);
-	score += maximizeDifferentRules(state);
-	score += minimizeDistanceToIsIfOnlyOneWinExists(state);
-	score += goalPath(state);
+	score += nbrOfGoals(state, weights[0]);
+	score += nbrOfPlayers(state, weights[1]);
+	score += connectivity(state, weights[2]);
+	score += outOfPlan(state, weights[3]);
+	score += elimOfAutomovers(state, weights[4]);
+
+	score += elimOfThreats(state, weights[5]);
+	score += maximizePushables(state, weights[6]);
+	score += minimizeSinkables(state, weights[7]);
+	score += minimizeStopables(state), weights[8];
+	score += distanceToKillables(state, weights[9]);
+
+	score += distanceHeuristic(state, weights[10], weights[11], weights[12], weights[13]); // 4 weights here
+	score += maximizeDifferentRules(state, weights[14]);
+
+	score += minimizeDistanceToIsIfOnlyOneWinExists(state, weights[15]);
+	score += goalPath(state, weights[16]);
 	
 	return score;
 }
@@ -1363,6 +1354,9 @@ function dist(a,b){
 // VISIBLE FUNCTION FOR OTHER JS FILES (NODEJS)
 module.exports = {
 	step : function(init_state){return iterSolve(init_state)},
-	init : function(init_state){initQueue(init_state);},
+	init : function(init_state, params){
+		initAgent(params);
+		initQueue(init_state);
+	},
 	best_sol : function(){return (queue.length > 1 ? queue.shift()[1].actionSet : []);}
 }

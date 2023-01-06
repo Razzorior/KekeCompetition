@@ -16,15 +16,16 @@ nr_of_objectives_per_level_set = {
     LevelSet.FULL : 184
 }
 
+nr_of_variables = 17
 
 class SingleObjectiveKeke(Problem):
 
     def __init__(self, level_set: LevelSet):
-        super().__init__(n_var=8,                   # number of variables
+        super().__init__(n_var=nr_of_variables,                   # number of variables
                          n_obj=1,                   # number of objectives
                          #  n_ieq_constr=2,         # number of constraints
-                         xl=np.array([-10]*8),      # lower bound
-                         xu=np.array([10]*8))       # upper bound
+                         xl=np.array([-10]*nr_of_variables),      # lower bound
+                         xu=np.array([10]*nr_of_variables))       # upper bound
         self.keke = KekeBridge(level_set)
 
     def _evaluate(self, x, out, *args, **kwargs):
@@ -35,11 +36,11 @@ class SingleObjectiveKeke(Problem):
 class MultiObjectiveKeke(Problem):
 
     def __init__(self, level_set: LevelSet):
-        super().__init__(n_var=8,                   # number of variables
+        super().__init__(n_var=nr_of_variables,                   # number of variables
                          n_obj=nr_of_objectives_per_level_set[level_set],                   # number of objectives
                          #  n_ieq_constr=2,         # number of constraints
-                         xl=np.array([-10]*8),      # lower bound
-                         xu=np.array([10]*8))       # upper bound
+                         xl=np.array([-10]*nr_of_variables),      # lower bound
+                         xu=np.array([10]*nr_of_variables))       # upper bound
         self.keke = KekeBridge(level_set, multi_objective=True)
 
     def _evaluate(self, x, out, *args, **kwargs):
@@ -47,7 +48,7 @@ class MultiObjectiveKeke(Problem):
         print()
 
 
-problem = SingleObjectiveKeke(level_set=LevelSet.DEMO)
+problem = SingleObjectiveKeke(level_set=LevelSet.TRAIN)
 
 algorithm = DE(pop_size=10)
 
@@ -59,7 +60,9 @@ res = minimize(problem,
 
 """
 problem = MultiObjectiveKeke(level_set=LevelSet.TRAIN)
+
 algorithm = NSGA2(pop_size=10)
+
 res = minimize(problem,
                algorithm,
                ("n_gen", 1),
@@ -70,3 +73,5 @@ res = minimize(problem,
 plot = Scatter()
 plot.add(res.F, edgecolor="red", facecolor="none")
 plot.show()
+
+print("Finished Optimization")

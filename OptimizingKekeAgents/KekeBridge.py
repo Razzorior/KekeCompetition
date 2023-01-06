@@ -25,7 +25,7 @@ logging.basicConfig(
 
 class KekeBridge:
 
-    def __init__(self, level_set: LevelSet, base_agent="weird_parameterized", port=8080, multi_objective=False):
+    def __init__(self, level_set: LevelSet, base_agent="conference", port=8080, multi_objective=False):
         logging.info("Init Keke Bridge")
         self.sio = socketio.Client()
 
