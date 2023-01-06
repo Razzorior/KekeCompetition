@@ -16,7 +16,7 @@ let PORT = 8080;
 
 //import socket io library for communication
 const { Server } = require("socket.io");
-const io = new Server(server);
+const io = new Server(server, opts={pingInterval:100000, pingTimeout:500000, upgradeTimeout:1000000});
 
 //file I/O
 const fs = require('fs');

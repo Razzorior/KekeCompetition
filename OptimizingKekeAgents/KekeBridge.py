@@ -24,7 +24,7 @@ class KekeBridge:
 
     def __init__(self, level_set_index=0, base_agent="weird_parameterized"):
         logging.info("Init Keke Bridge")
-        self.sio = socketio.Client(ping_timeout=120)
+        self.sio = socketio.Client()
 
         # initialize listeners
         self.sio.on('level-set-list', self.on_level_set_list)

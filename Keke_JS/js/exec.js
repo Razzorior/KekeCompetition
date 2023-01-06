@@ -4,8 +4,8 @@ var kekeAgent = (args.length > 0 ? args[0] : 'default');
 var levelSetName = (args.length > 1 ? args[1] : 'demo_levels');
 var levelNum = (args.length > 2 ? args[2] : 1);
 
-var TIMEOUT = 1.0;			//10s
-var MAX_ITER = 1000;
+var TIMEOUT = 1.0;			//10.0
+var MAX_ITER = 1000;		//10000
 
 //get node.js imports
 var kekejs = require('../agents/' + kekeAgent + '_AGENT')
