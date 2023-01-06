@@ -3,13 +3,16 @@ import time
 import logging
 import numpy as np
 import sys
+import typing
 
-LEVEL_SETS = ["demo_LEVELS",
-              "empty_LEVELS",
-              "full_biy_LEVELS",
-              "search_biy_LEVELS",
-              "test_LEVELS",
-              "user_milk_biy_LEVELS"]
+from enum import Enum
+
+class LevelSet(str, Enum):
+    DEMO = "demo_LEVELS"
+    FULL = "full_biy_LEVELS"
+    TRAIN = "train_LEVELS"
+    TEST = "test_LEVELS"
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,7 +25,7 @@ logging.basicConfig(
 
 class KekeBridge:
 
-    def __init__(self, level_set_index=0, base_agent="weird_parameterized"):
+    def __init__(self, level_set: LevelSet, base_agent="weird_parameterized", port=8080, multi_objective=False):
         logging.info("Init Keke Bridge")
         self.sio = socketio.Client()
 
@@ -34,13 +37,14 @@ class KekeBridge:
 
         # establish connection
         self.connected = False
-        self.sio.connect('http://localhost:8080', namespaces=['/'])
+        self.sio.connect(f'http://localhost:{port}', namespaces=['/'])
         self.sio.emit("connection")
         while not self.connected:
             time.sleep(0.001)
 
         # agent to be used
         self.agent = base_agent
+        self.multi_objective = multi_objective
 
         # initialize level set data. class cannot be used before available levels is properly initialized
         self.levels_loaded = False
@@ -49,10 +53,7 @@ class KekeBridge:
         self.stats = []
         self.params_to_be_evaluated = []
 
-        if 0 <= level_set_index < len(LEVEL_SETS):
-            self.level_set = LEVEL_SETS[level_set_index]
-        else:
-            raise Exception(f"level_set_index needs to be in the range of [0, {len(LEVEL_SETS) - 1}]")
+        self.level_set = level_set.value
 
         """
         self.load_level_set(self.level_set)
@@ -85,7 +86,11 @@ class KekeBridge:
             stats.append(lvl['won_level'])
 
         logging.info("performance:" + str(sum(stats) / len(stats)))
-        self.stats.append(sum(stats) / len(stats))
+        if not self.multi_objective:
+            self.stats.append(sum(stats) / len(stats))
+        else:
+            self.stats.append(np.array(stats)*1)
+
         self.evaluate_next_agent()
 
     def on_received_level_set_json(self, level_set_json):
@@ -112,10 +117,11 @@ class KekeBridge:
         while len(self.stats) < len(list_of_param_sets):
             time.sleep(0.001)
         return np.array(self.stats.copy())
+
     # endregion
 
 
 if __name__ == '__main__':
-    keke = KekeBridge()
+    keke = KekeBridge(level_set=LevelSet.DEMO)
     a = keke.evaluate_agents(np.array([[1, 1, 1, 1, 1, 0, 0, 1],
                               [1, 1, 1, 1, 1, 1, 1, 1]]))
