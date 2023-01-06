@@ -115,7 +115,7 @@ function executeLevel(ls,ln,iter,agent='default'){
 	//reimport keke based on agent
 	kekejs = require('../agents/' + agent + '_AGENT')
 
-
+	
 	let lvlSet = jsonjs.getLevelSet(ls);
 	let lvl = jsonjs.getLevel(lvlSet,ln);
 	console.log(` -- LEVEL [ ${ln} ] FROM LEVEL SET [ ${ls} ] FOR [ ${iter} ] ITERATIONS --`)
@@ -139,6 +139,8 @@ function executeLevelSet(ls,iter,agent='default'){
 	//reimport keke based on agent
 	kekejs = require('../agents/' + agent + '_AGENT')
 
+	
+	
 	let lvlSet = jsonjs.getLevelSet(ls);
 
 	console.log(`-- SOLVING [ ${lvlSet.length} ] LEVELS FROM LEVEL SET [ ${ls} ] FOR [ ${iter} ] ITERATIONS --`);
@@ -165,10 +167,6 @@ function executeLevelSet(ls,iter,agent='default'){
 	}
 	return report;
 }
-
-
-
-
 
 
 function test(){

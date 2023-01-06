@@ -1,0 +1,36 @@
+[
+  {
+    "levelSet": "test_LEVELS",
+    "levels": [
+      {
+        "id": 0,
+        "iterations": 10000,
+        "time": 1.295,
+        "solution": "space",
+        "won_level": false
+      },
+      {
+        "id": 1,
+        "iterations": 10000,
+        "time": 0.956,
+        "solution": "space",
+        "won_level": false
+      },
+      {
+        "id": 2,
+        "iterations": 10000,
+        "time": 0.954,
+        "solution": "space",
+        "won_level": false
+      }
+    ]
+  },
+  {
+    "levelSet": "demo_LEVELS",
+    "levels": []
+  },
+  {
+    "levelSet": "feature_LEVELS",
+    "levels": []
+  }
+]
