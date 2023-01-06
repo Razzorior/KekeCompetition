@@ -4,16 +4,13 @@ var kekeAgent = (args.length > 0 ? args[0] : 'default');
 var levelSetName = (args.length > 1 ? args[1] : 'demo_levels');
 var levelNum = (args.length > 2 ? args[2] : 1);
 
-var TIMEOUT = 1.0;			//10.0
-var MAX_ITER = 1000;		//10000
+var TIMEOUT = 2.0;			//	10.0
+var MAX_ITER = 2000;		//	10000
 
 //get node.js imports
 var kekejs = require('../agents/' + kekeAgent + '_AGENT')
 var jsonjs = require('./json_io')
 var simjs = require('./simulation')
-
-
-
 
 
 // RUN THE KEKE SOLVER ON A LEVEL
@@ -102,13 +99,6 @@ function validSolution(sol, init_map){
 	//no win state reached
 	return false;
 }
-
-
-
-
-
-
-
 
 // SOLVE A SINGLE LEVEL FROM A LEVEL SET FOR A SET NUMBER OF ITERATIONS
 function executeLevel(ls,ln,iter,agent='default'){

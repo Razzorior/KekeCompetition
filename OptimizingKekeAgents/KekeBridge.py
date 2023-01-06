@@ -23,10 +23,11 @@ logging.basicConfig(
     ]
 )
 
+
 class KekeBridge:
 
-    def __init__(self, level_set: LevelSet, base_agent="conference", port=8080, multi_objective=False):
-        logging.info("Init Keke Bridge")
+    def __init__(self, level_set: LevelSet, time_per_level_in_ms, base_agent="conference", port=8080, levels_per_objective=1):
+        #logging.info("Init Keke Bridge")
         self.sio = socketio.Client()
 
         # initialize listeners
@@ -44,7 +45,8 @@ class KekeBridge:
 
         # agent to be used
         self.agent = base_agent
-        self.multi_objective = multi_objective
+        self.levels_per_objective = levels_per_objective
+        self.time_per_level_in_ms = time_per_level_in_ms
 
         # initialize level set data. class cannot be used before available levels is properly initialized
         self.levels_loaded = False
@@ -81,15 +83,29 @@ class KekeBridge:
         self.connected = True
 
     def on_finish_level_set(self, lvl_set_results):
-        stats = []
+        wins = []
+        ticks = []
         for lvl in lvl_set_results:
-            stats.append(lvl['won_level'])
+            wins.append(lvl['won_level'])
+            ticks.append(lvl['iterations'])
 
-        logging.info("performance:" + str(sum(stats) / len(stats)))
-        if not self.multi_objective:
-            self.stats.append(sum(stats) / len(stats))
+        if self.levels_per_objective == 1:
+            performance_wins = np.mean(wins)*self.time_per_level_in_ms
+            performance_ticks = np.mean(self.time_per_level_in_ms - np.array(ticks))
+            performance = performance_wins+performance_ticks
+            wins = np.mean(wins)
+            ticks = np.mean(ticks)
+            logging.info("performance: " + str(performance_wins + performance_ticks) + "; average_wins: " + str(wins) + "; average_ticks: " + str(ticks))
+            self.stats.append((performance, wins, ticks))
         else:
-            self.stats.append(np.array(stats)*1)
+            performance = (np.array(wins) * self.time_per_level_in_ms + (self.time_per_level_in_ms - np.array(ticks)))
+            performance = performance.reshape((-1, self.levels_per_objective))
+            performance = performance.mean(1)
+
+            wins = np.mean(wins)
+            ticks = np.mean(ticks)
+            logging.info("performance: " + str(performance) + "; average_wins: " + str(wins) + "; average_ticks: " + str(ticks))
+            self.stats.append((performance, wins, ticks))
 
         self.evaluate_next_agent()
 
@@ -116,7 +132,7 @@ class KekeBridge:
         self.evaluate_next_agent()
         while len(self.stats) < len(list_of_param_sets):
             time.sleep(0.001)
-        return np.array(self.stats.copy())
+        return self.stats.copy()
 
     # endregion
 
